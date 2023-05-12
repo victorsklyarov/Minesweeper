@@ -1,0 +1,30 @@
+<!--
+  ~ Copyright 2022 Zero Illusion
+  ~
+  ~ Licensed under the Apache License, Version 2.0 (the "License");
+  ~ you may not use this file except in compliance with the License.
+  ~ You may obtain a copy of the License at
+  ~
+  ~     https://www.apache.org/licenses/LICENSE-2.0
+  ~
+  ~ Unless required by applicable law or agreed to in writing, software
+  ~ distributed under the License is distributed on an "AS IS" BASIS,
+  ~ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+  ~ See the License for the specific language governing permissions and
+  ~ limitations under the License.
+  -->
+
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="5dp"
+    android:height="5dp"
+    android:viewportWidth="5"
+    android:viewportHeight="5">
+    <path
+        android:fillColor="@color/bg_field_open"
+        android:pathData="M1 0a1 1 0 0 0-1 1v3a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1V1a1 1 0 0 0-1-1" />
+    <path
+        android:fillColor="@color/n_3"
+        android:pathData="M1.369 0.72c-0.119 0-0.228 0.029-0.326 0.088a0.696 0.696 45 0 0-0.237 0.233C0.75 1.136 0.722 1.245 0.722 1.366v0.198h0.539V1.381c0-0.064 0.055-0.123 0.118-0.123h2.094c0.07 0 0.124 0.062 0.124 0.123v0.701a0.12 0.12 0 0 1-0.124 0.124H1.37V2.74h2.257c0.064 0 0.118 0.063 0.118 0.123v0.76c0 0.067-0.047 0.124-0.118 0.124H1.379c-0.072 0-0.119-0.062-0.119-0.124V3.49H0.722v0.148c0 0.119 0.03 0.226 0.089 0.321 0.059 0.096 0.136 0.173 0.232 0.232 0.095 0.06 0.204 0.09 0.326 0.09H3.64c0.115 0 0.22-0.03 0.316-0.09 0.098-0.059 0.176-0.136 0.232-0.232 0.059-0.095 0.089-0.202 0.089-0.32v-0.79c0-0.086-0.015-0.174-0.045-0.262A0.615 0.615 45 0 0 4.08 2.344C4.097 2.308 4.108 2.27 4.115 2.226 4.125 2.183 4.13 2.14 4.13 2.098V1.366a0.631 0.631 0 0 0-0.316-0.558 0.606 0.606 0 0 0-0.326-0.089z"
+        android:strokeWidth="4"
+        android:strokeLineCap="round" />
+</vector>

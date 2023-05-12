@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="bg_field_open">#4A4752</color>
+    <color name="bg_field_close">#605669</color>
+    <color name="n_1">#B0B0FF</color>
+    <color name="n_2">#00D400</color>
+    <color name="n_3">#FF9B9B</color>
+    <color name="n_4">#E79AFF</color>
+    <color name="n_5">#FFA055</color>
+    <color name="n_6">#00DEDE</color>
+    <color name="n_7">#FFFFFF</color>
+    <color name="n_8">#B7B7B7</color>
+</resources>
