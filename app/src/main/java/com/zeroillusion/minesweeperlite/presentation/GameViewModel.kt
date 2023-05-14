@@ -7,6 +7,7 @@ import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.neverEqualPolicy
 import androidx.lifecycle.ViewModel
 import com.zeroillusion.minesweeperlite.domain.model.Cell
+import com.zeroillusion.minesweeperlite.domain.model.Coordinate
 import com.zeroillusion.minesweeperlite.domain.model.GameEvent
 import com.zeroillusion.minesweeperlite.domain.model.GameMode
 import com.zeroillusion.minesweeperlite.domain.model.GameState
@@ -34,7 +35,7 @@ class GameViewModel @Inject constructor(
 
     //var boardState by mutableStateOf<Array<Array<MutableState<Cell>>>>(arrayOf())
 
-    var board by mutableStateOf<Array<Array<Cell>>>(arrayOf(), neverEqualPolicy())
+    var board by mutableStateOf<Array<Array<Cell>>>(arrayOf())//, neverEqualPolicy())
 
     private val _currentGameMode = mutableStateOf(GameMode.Easy)
     val currentGameMode: State<GameMode> = _currentGameMode
@@ -46,12 +47,12 @@ class GameViewModel @Inject constructor(
         updateBoard()
     }
 
-    fun updateBoard(cell: Cell? = null, gameEvent: GameEvent? = null) {
+    fun updateBoard(cell: Cell? = null, gameEvent: GameEvent? = null, coordinate: Coordinate? = null) {
         //val newBoard = boardState.map { row -> row.map { item -> item.value }.toTypedArray() }.toTypedArray()
         //_board.value = updateBoard(newBoard, cell, gameEvent)
         //boardState = board.value.map { row -> row.map { item -> mutableStateOf(item) }.toTypedArray() }.toTypedArray()
 
-        board = updateBoard(board, cell, gameEvent)
+        board = updateBoard(board, cell, gameEvent, coordinate)
 
         _currentGameState.value = getGameState()
     }
