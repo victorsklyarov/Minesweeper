@@ -30,7 +30,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.zeroillusion.minesweeperlite.R
 import com.zeroillusion.minesweeperlite.domain.model.Cell
-import com.zeroillusion.minesweeperlite.domain.model.Coordinate
 import com.zeroillusion.minesweeperlite.domain.model.GameEvent
 import com.zeroillusion.minesweeperlite.domain.model.GameState
 import com.zeroillusion.minesweeperlite.presentation.GameViewModel
@@ -203,20 +202,11 @@ fun GameScreen(
 
         val m = viewModel.currentGameMode.value.row
         val n = viewModel.currentGameMode.value.column
-        /*
         val state = remember(board) {
             MutableStateFlow(
-                List(m) {
-                    List(n) { 0 }
-                }
-            )
-        }
-         */
-        val state = remember(board) {
-            MutableStateFlow(
-                List(m) {
-                    List(n) {
-                        Cell()
+                List(m) { i ->
+                    List(n) { j ->
+                        Cell(i, j)
                     }
                 }
             )
@@ -230,7 +220,7 @@ fun GameScreen(
                     Row {
                         for (j in 0 until n)
                             Cell(
-                                value = remember {
+                                value = remember(board) {
                                     state.map { it[i][j] }.stateIn(
                                         coroutineScope,
                                         SharingStarted.Eagerly,
@@ -241,13 +231,24 @@ fun GameScreen(
                                     state.value = state.value.toMutableList().also { column ->
                                         column[i] = column[i].toMutableList().also { row ->
                                             row[j] = row[j].copy(
-                                                counter = row[j].counter + 1
+                                                //counter = row[j].counter + 1
+                                                //isOpened = !row[j].isOpened
+                                                isOpened = true
                                             )
                                         }.toImmutableList()
                                     }.toImmutableList()
                                 },
-                                viewModel = viewModel,
-                                coordinate = Coordinate(x = i, y = j)
+                                onLongClick = {
+                                    state.value = state.value.toMutableList().also { column ->
+                                        column[i] = column[i].toMutableList().also { row ->
+                                            row[j] = row[j].copy(
+                                                //counter = row[j].counter + 1
+                                                isFlagged = !row[j].isFlagged
+                                            )
+                                        }.toImmutableList()
+                                    }.toImmutableList()
+                                },
+                                viewModel = viewModel
                             )
                     }
             }
@@ -260,8 +261,8 @@ fun GameScreen(
 private fun Cell(
     value: StateFlow<Cell>,
     onClick: () -> Unit,
-    viewModel: GameViewModel,
-    coordinate: Coordinate
+    onLongClick: () -> Unit,
+    viewModel: GameViewModel
 ) {
     /*
     Text(
@@ -274,9 +275,8 @@ private fun Cell(
     val currentGameState by remember { mutableStateOf(viewModel.currentGameState) }
     val board = viewModel.board
     val haptic = LocalHapticFeedback.current
-    val i = coordinate.x
-    val j = coordinate.y
 
+    val currentItem by value.collectAsState()
 
     Image(
         painter = painterResource(
@@ -284,20 +284,20 @@ private fun Cell(
             if (currentGameState.value == GameState.Init) {
                 R.drawable.ic_field
             } else {
-                if (value.collectAsState().value.isOpened
-                    && value.collectAsState().value.isMine
+                if (currentItem.isOpened
+                    && currentItem.isMine
                 ) {
                     R.drawable.ic_num_9
-                } else if (!value.collectAsState().value.isOpened
-                    && value.collectAsState().value.isFlagged
+                } else if (!currentItem.isOpened
+                    && currentItem.isFlagged
                 ) {
                     R.drawable.ic_flag
-                } else if (!value.collectAsState().value.isOpened
-                    && !value.collectAsState().value.isFlagged
+                } else if (!currentItem.isOpened
+                    && !currentItem.isFlagged
                 ) {
                     R.drawable.ic_field
-                } else if (value.collectAsState().value.isOpened) {
-                    when (value.collectAsState().value.minesNearby) {
+                } else {
+                    when (currentItem.minesNearby) {
                         0 -> R.drawable.ic_num_0
                         1 -> R.drawable.ic_num_1
                         2 -> R.drawable.ic_num_2
@@ -309,7 +309,7 @@ private fun Cell(
                         8 -> R.drawable.ic_num_8
                         else -> R.drawable.ic_field
                     }
-                } else R.drawable.ic_field
+                }
             }
         ),
         contentDescription = null,
@@ -320,26 +320,23 @@ private fun Cell(
                 onClick = {
                     onClick()
                     viewModel.updateBoard(
-                        board[i][j],
-                        GameEvent.OnClick,
-                        coordinate
+                        board[value.value.x][value.value.y],
+                        GameEvent.OnClick
                     )
                 },
                 onLongClick = {
-                    onClick()
+                    onLongClick()
                     viewModel.updateBoard(
-                        board[i][j],
-                        GameEvent.OnLongClick,
-                        coordinate
+                        board[value.value.x][value.value.y],
+                        GameEvent.OnLongClick
                     )
                     haptic.performHapticFeedback(HapticFeedbackType.LongPress)
                 },
                 onDoubleClick = {
                     onClick()
                     viewModel.updateBoard(
-                        board[i][j],
-                        GameEvent.OnDoubleClick,
-                        coordinate
+                        board[value.value.x][value.value.y],
+                        GameEvent.OnDoubleClick
                     )
                 }
             )

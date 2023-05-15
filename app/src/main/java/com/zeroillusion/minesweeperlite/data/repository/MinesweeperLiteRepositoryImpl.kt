@@ -6,7 +6,6 @@ import androidx.security.crypto.EncryptedSharedPreferences
 import androidx.security.crypto.MasterKey
 import com.zeroillusion.minesweeperlite.domain.repository.MinesweeperLiteRepository
 import com.zeroillusion.minesweeperlite.domain.model.Cell
-import com.zeroillusion.minesweeperlite.domain.model.Coordinate
 import com.zeroillusion.minesweeperlite.domain.model.GameEvent
 import com.zeroillusion.minesweeperlite.domain.model.GameMode
 import com.zeroillusion.minesweeperlite.domain.model.GameState
@@ -40,43 +39,42 @@ class MinesweeperLiteRepositoryImpl(
     override fun updateBoard(
         board: Array<Array<Cell>>,
         cell: Cell?,
-        gameEvent: GameEvent?,
-        coordinate: Coordinate?
+        gameEvent: GameEvent?
     ): Array<Array<Cell>> {
 
-        if (cell == null || gameEvent == null || coordinate == null) {
+        if (cell == null || gameEvent == null) {
             gameState = GameState.Init
             minesLeftCount = 0
-            //return Array(gameMode.row) { i -> Array(gameMode.column) { j -> Cell(i, j) } }
-            return Array(gameMode.row) { Array(gameMode.column) { Cell() } }
+            return Array(gameMode.row) { i -> Array(gameMode.column) { j -> Cell(i, j) } }
+            //return Array(gameMode.row) { Array(gameMode.column) { Cell() } }
         }
 
         if (gameState == GameState.Init) {
             if (gameEvent == GameEvent.OnClick) {
-                fillBoard(board, gameMode.mineCount, cell, coordinate)
+                fillBoard(board, gameMode.mineCount, cell)
                 setMinesNearby(board)
-                openCell(cell, board, coordinate)
+                openCell(cell, board)
                 //START CHRONOMETER
                 gameState = GameState.Playing
             }
         } else if (gameState == GameState.Playing) {
             when (gameEvent) {
                 GameEvent.OnClick -> {
-                    gameState = onClick(board, cell, gameMode, coordinate)
+                    gameState = onClick(board, cell, gameMode)
                 }
 
                 GameEvent.OnDoubleClick -> {
                     gameState = if (cell.isOpened) {
-                        chording(board, cell, coordinate)
+                        chording(board, cell)
                         checkGameState(board, gameMode.mineCount)
                     } else {
-                        onClick(board, cell, gameMode, coordinate)
+                        onClick(board, cell, gameMode)
                     }
                 }
 
                 GameEvent.OnLongClick -> {
                     if (!cell.isOpened) {
-                        toggleFlag(board, cell, coordinate)
+                        toggleFlag(board, cell)
                     }
                 }
             }
@@ -114,11 +112,10 @@ class MinesweeperLiteRepositoryImpl(
     private fun onClick(
         board: Array<Array<Cell>>,
         cell: Cell,
-        gameMode: GameMode,
-        coordinate: Coordinate
+        gameMode: GameMode
     ): GameState {
         if (!cell.isFlagged) {
-            openCell(cell, board, coordinate)
+            openCell(cell, board)
             return checkGameState(board, gameMode.mineCount)
         }
         return GameState.Playing
@@ -127,25 +124,17 @@ class MinesweeperLiteRepositoryImpl(
     private fun fillBoard(
         board: Array<Array<Cell>>,
         mineCount: Int,
-        cell: Cell,
-        coordinate: Coordinate
+        cell: Cell
     ): Array<Array<Cell>> {
         val cells = board.flatten().toMutableList()
-        for (i in max(coordinate.x - 1, 0) until min(coordinate.x + 2, board.size)) {
-            for (j in max(coordinate.y - 1, 0) until min(coordinate.y + 2, board[i].size)) {
+        for (i in max(cell.x - 1, 0) until min(cell.x + 2, board.size)) {
+            for (j in max(cell.y - 1, 0) until min(cell.y + 2, board[i].size)) {
                 cells.remove(board[i][j])
             }
         }
         cells.shuffle()
-        //cells.take(mineCount).forEach {
-        //    //it.isMine = true
-        //    board[it.x][it.y] = board[it.x][it.y].copy(
-        //        isMine = true
-        //    )
-        //}
-        val cellsForMines = cells.take(mineCount).toMutableList()
-        for (currentCell in 0..cellsForMines.size) {
-            cellsForMines[0] = cellsForMines[0].copy(
+        for (i in 0 until mineCount) {
+            board[cells[i].x][cells[i].y] = board[cells[i].x][cells[i].y].copy(
                 isMine = true
             )
         }
@@ -156,7 +145,6 @@ class MinesweeperLiteRepositoryImpl(
         for (i in board.indices) {
             for (j in board[i].indices) {
                 if (!board[i][j].isMine) {
-                    //board[i][j].minesNearby = getMinesNearby(board, i, j)
                     board[i][j] = board[i][j].copy(
                         minesNearby = getMinesNearby(board, i, j)
                     )
@@ -177,17 +165,17 @@ class MinesweeperLiteRepositoryImpl(
         return count
     }
 
-    private fun openCell(cell: Cell, board: Array<Array<Cell>>, coordinate: Coordinate) {
+    private fun openCell(cell: Cell, board: Array<Array<Cell>>) {
         //cell.isOpened = true
-        board[coordinate.x][coordinate.y] = board[coordinate.x][coordinate.y].copy(
+        board[cell.x][cell.y] = board[cell.x][cell.y].copy(
             isOpened = true
         )
 
         if (cell.minesNearby == 0 && !cell.isMine) {
-            for (i in max(coordinate.x - 1, 0) until min(coordinate.x + 2, board.size)) {
-                for (j in max(coordinate.y - 1, 0) until min(coordinate.y + 2, board[i].size)) {
+            for (i in max(cell.x - 1, 0) until min(cell.x + 2, board.size)) {
+                for (j in max(cell.y - 1, 0) until min(cell.y + 2, board[i].size)) {
                     if (!board[i][j].isOpened && !board[i][j].isFlagged) {
-                        openCell(board[i][j], board, Coordinate(i, j))
+                        openCell(board[i][j], board)
                     }
                 }
             }
@@ -196,12 +184,11 @@ class MinesweeperLiteRepositoryImpl(
 
     private fun toggleFlag(
         board: Array<Array<Cell>>,
-        cell: Cell,
-        coordinate: Coordinate
+        cell: Cell
     ): Array<Array<Cell>> {
         if (cell.isFlagged) minesLeftCount-- else minesLeftCount++
         //board[cell.x][cell.y].isFlagged = !cell.isFlagged
-        board[coordinate.x][coordinate.y] = board[coordinate.x][coordinate.y].copy(
+        board[cell.x][cell.y] = board[cell.x][cell.y].copy(
             isFlagged = !cell.isFlagged
         )
         return board
@@ -209,19 +196,18 @@ class MinesweeperLiteRepositoryImpl(
 
     private fun chording(
         board: Array<Array<Cell>>,
-        cell: Cell,
-        coordinate: Coordinate
+        cell: Cell
     ): Array<Array<Cell>> {
         if (cell.isOpened && (cell.minesNearby == getFlagsNearby(
                 board,
-                coordinate.x,
-                coordinate.y
+                cell.x,
+                cell.y
             ))
         ) {
-            for (i in max(coordinate.x - 1, 0) until min(coordinate.x + 2, board.size)) {
-                for (j in max(coordinate.y - 1, 0) until min(coordinate.y + 2, board[i].size)) {
+            for (i in max(cell.x - 1, 0) until min(cell.x + 2, board.size)) {
+                for (j in max(cell.y - 1, 0) until min(cell.y + 2, board[i].size)) {
                     if (!board[i][j].isOpened && !board[i][j].isFlagged) {
-                        openCell(board[i][j], board, coordinate)
+                        openCell(board[i][j], board)
                     }
                 }
             }
